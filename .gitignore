@@ -1,6 +1,7 @@
 env/
 .env
 *.session
+*.json
 
 server/
 **/__pycache__/
