@@ -1,14 +1,13 @@
 import asyncio
 import os
 
-from playwright.async_api import BrowserContext, Page
+from playwright.async_api import Page
 
-from .delay import human_like_delay
+from service.controls import pagestate
+from service.delay import human_like_delay
 
 
-async def loginInstagram(context: BrowserContext):
-    page = await context.new_page()
-    # stealth_sync(page)
+async def loginInstagram(page: Page):
     _ = await page.goto("https://instagram.com/")
 
     await page.locator('input[type="text"][name="username"]').fill(
@@ -20,14 +19,14 @@ async def loginInstagram(context: BrowserContext):
 
     button = page.locator('button[type="submit"]')
 
-    await human_like_delay()
+    await human_like_delay() if pagestate.allow_delay else None
     await button.hover()
-    await human_like_delay()
+    await human_like_delay() if pagestate.allow_delay else None
     await button.click()
 
     print("Complete 2FA")
     await page.pause()
-    _ = await context.storage_state(path="instagram_state.session")
+    _ = await page.context.storage_state(path="instagram_state.session")
     await page.close()
     return
 

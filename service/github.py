@@ -1,12 +1,11 @@
 import os
 
-from playwright.async_api import BrowserContext
+from playwright.async_api import Page
 
 from .delay import human_like_delay
 
 
-async def loginGithub(context: BrowserContext):
-    page = await context.new_page()
+async def loginGithub(page: Page):
     _ = await page.goto("https://github.com/login")
 
     await page.locator("#login_field").fill(f"{os.getenv("GITHUB_USERNAME")}")
@@ -19,6 +18,7 @@ async def loginGithub(context: BrowserContext):
     await button.click()
 
     print("Complete 2FA")
-    _ = context.storage_state(path="github_state.session")
+    _ = await page.pause()
+    _ = await page.context.storage_state(path="./states/github_state.session")
     await page.close()
     return

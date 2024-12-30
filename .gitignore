@@ -2,8 +2,10 @@ env/
 .env
 *.session
 *.json
+*.state
 
-server/
+testin/server/
 **/__pycache__/
 *.pyc
 *.chat
+whatsapp.html

@@ -3,13 +3,12 @@ import json
 import os
 
 from bs4 import BeautifulSoup
-from playwright.async_api import BrowserContext, Locator, Page
+from playwright.async_api import Locator, Page
 
 from .delay import human_like_delay
 
 
-async def loginDiscord(context: BrowserContext):
-    page = await context.new_page()
+async def loginDiscord(page: Page):
     _ = await page.goto("https://discord.com/login/")
 
     await page.locator('input[name="email"][type="text"]').fill(
@@ -29,7 +28,7 @@ async def loginDiscord(context: BrowserContext):
 
     print("Complete 2FA")
     await page.pause()
-    _ = await context.storage_state(path="discord_state.session")
+    _ = await page.context.storage_state(path="discord_state.session")
     await page.close()
     return
 
