@@ -1,7 +1,40 @@
 import ky, { type KyResponse } from "ky"
-import { scrapeState } from "./store.svelte"
+import { pgInstances, pgState, services, storageStates } from "./store.svelte"
+import type { PageState } from "./store.svelte"
 
-export async function startContext() {
+export async function updatePageState() {
+  const res: KyResponse = await ky.post("http://localhost:8000/api/pagestate/update", { json: { "id": pgState.pageId, "pageState": pgState.pageState[0] } })
+  const result = await res.json()
+  console.log(result)
+  return
+}
+
+export async function killBrowser() {
+  const res: KyResponse = await ky.post("http://localhost:8000/api/appstate/status", { json: { status: false } })
+  const result: { success: string } = await res.json()
+  if (result.success) {
+    pgInstances.clear()
+  }
+  return
+}
+
+export async function getPageInfoById(id: number) {
+  interface Response {
+    id: number,
+    pageState: PageState
+  }
+  const res: KyResponse = await ky.get(`http://localhost:8000/api/appstate?id=${id}`)
+  const result: Response = await res.json()
+  pgState.update(result.id, result.pageState)
+  console.log("Ohio")
+  return
+}
+
+export async function startNewPage() {
+  interface Response {
+    id: number,
+    pageState: PageState
+  }
   const serviceIndex: number = (document.getElementById("ServiceDisplay") as HTMLSelectElement).selectedIndex
   const storageState: string = (document.getElementById("StorageDisplay") as HTMLSelectElement).value
   const contextURL: string = (document.getElementById("ContextURL") as HTMLInputElement).value
@@ -13,8 +46,12 @@ export async function startContext() {
     "autoLogIn": autoLogIn
   }
   const res: KyResponse = await ky.post("http://localhost:8000/api/appstate", { json: sendData })
-  const result = await res.json()
-  console.log(result)
+  const result: Response = await res.json()
+  console.log("Skibidi")
+  pgState.update(result.id, result.pageState)
+  pgInstances.addInstance(result.id, result.pageState.service)
+
+  // Skibidi
   return
 }
 
@@ -24,17 +61,7 @@ export async function getServices(): Promise<string[]> {
   }
   const res: KyResponse = await ky.get("http://localhost:8000/api/appstate/service")
   const result: Response = await res.json()
-  const doc = document.getElementById("ServiceDisplay")
-  while (doc && doc.hasChildNodes()) {
-    doc.removeChild(doc.children[0]);
-  }
-  const services: string[] = result?.service;
-  for (let service of services) {
-    const opt = document.createElement("option");
-    opt.setAttribute("value", service);
-    opt.innerText = service;
-    doc?.appendChild(opt);
-  }
+  services.set(result.service)
   return result.service
 }
 
@@ -42,21 +69,8 @@ export async function getStorageStates(): Promise<string[]> {
   interface Response {
     storageState: string[]
   }
-  // get states
   const res: KyResponse = await ky.get("http://localhost:8000/api/appstate/storagestate")
   const result: Response = await res.json()
-
-  // set states as options
-  const doc = document.getElementById("StorageDisplay");
-  while (doc && doc.hasChildNodes()) {
-    doc.removeChild(doc.children[0]);
-  }
-  const states: string[] = result?.storageState;
-  for (let state of states) {
-    const opt = document.createElement("option");
-    opt.setAttribute("value", state);
-    opt.innerText = state;
-    doc?.appendChild(opt);
-  }
+  storageStates.set(result.storageState)
   return result.storageState
 }

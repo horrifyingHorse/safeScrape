@@ -6,17 +6,6 @@ from service.discord import loginDiscord
 from service.github import loginGithub
 from service.instagram import loginInstagram
 
-# async def launchBrowser() -> Browser:
-#     global browser, playright_instance
-#     print(browser, "what?")
-#     if browser != None:
-#         return browser
-#
-#     playright_instance = await async_playwright().start()
-#     browser = await playright_instance.chromium.launch(headless=False)
-#     print(browser, "what?2")
-#     return browser
-
 
 async def newContext(browser: Browser, state: PageState) -> BrowserContext:
     return await browser.new_context(

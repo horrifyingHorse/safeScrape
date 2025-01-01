@@ -1,4 +1,5 @@
-from playwright.async_api import Browser, Playwright, async_playwright
+from playwright.async_api import Browser, Page, Playwright, async_playwright
+from pydantic import BaseModel
 
 
 class AppState:
@@ -13,15 +14,14 @@ class AppState:
         self.status: bool = True  # Playwright is running?
 
 
-class PageState:
-    def __init__(self):
-        self.auto_login: bool = False
-        self.storage_state: str = ""  # Session Info
-        self.service: str = "instagram.com"
-        self.custom_url: str = ""
-        self.scrape: bool = False
-        self.allow_delay: bool = True
-        self.execute: bool = False
+class PageState(BaseModel):
+    auto_login: bool = False
+    storage_state: str = ""  # Session Info
+    service: str = "instagram.com"
+    custom_url: str = ""
+    scrape: bool = False
+    allow_delay: bool = True
+    execute: bool = False
 
 
 # Singleton Approach
@@ -50,6 +50,43 @@ class BrowserManager:
         if cls.playwright_instance is not None:
             await cls.playwright_instance.stop()
             cls.playwright_instance = None
+        await PageManager.clear()
+        return
+
+
+class PageManager:
+    class PageStorage:
+        def __init__(self, page: Page, state: PageState):
+            self.page: Page = page
+            self.state: PageState = state
+
+    pages: dict[int, PageStorage] = {}
+    id: int = 0
+
+    @classmethod
+    async def addPage(cls, page: Page, state: PageState) -> int:
+        cls.pages[cls.id] = cls.PageStorage(page=page, state=state)
+        cls.id += 1
+        return cls.id - 1
+
+    @classmethod
+    async def updatePage(cls, id: int, state: PageState) -> bool:
+        if id < 0 or id > cls.id:
+            print(f"Illegal id, recieved {id}")
+            return False
+        cls.pages[id].state = state
+        return True
+
+    @classmethod
+    async def getPage(cls, id: int) -> tuple[Page, PageState]:
+        if id < 0 or id > cls.id:
+            print(f"Illegal id, recieved {id}")
+        return (cls.pages[id].page, cls.pages[id].state)
+
+    @classmethod
+    async def clear(cls) -> None:
+        cls.id = 0
+        cls.pages = {}
         return
 
 

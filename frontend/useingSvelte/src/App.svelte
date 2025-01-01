@@ -1,76 +1,45 @@
 <script lang="ts">
-  import { scrapeState } from "./lib/store.svelte";
-  import { getStorageStates, startContext, getServices } from "./lib/in.svelte";
-  import { onMount } from "svelte";
-
-  onMount(() => {
-    getServices();
-    getStorageStates();
-  });
+  import AppControls from "./AppControls.svelte";
+  import PageControls from "./PageControls.svelte";
+  import { pgInstances } from "./lib/store.svelte";
+  import type { PageState } from "./lib/store.svelte";
 </script>
 
 <!--
 Features:
-  [ ] Launch new page (in a new Context) of the headful playwright
+  [+] Launch new page (in a new Context) of the headful playwright
       (+) Select state (cookies, auth)
       (+) URL to start context with
-      ( ) Auto Log in?
+      (+) Auto Log in?
+      + (+) Kill Browser
+  => AppControls
+
+
 -->
 
 <main>
   <div class="text-3xl w-svw text-center mb-4">App Controls</div>
-  <div class="flex flex-col items-center">
-    <div class="flex w-svw justify-evenly items-center mb-4">
-      <div>
-        <span>Select Service:</span>
-        <select
-          class="p-2 rounded-md"
-          id="ServiceDisplay"
-          onfocus={async () => await getServices()}
-          onchange={() => {}}
-        >
-        </select>
-      </div>
+  <AppControls />
+  <!-- <button -->
+  <!--   onclick={() => { -->
+  <!--     const ps: PageState = { -->
+  <!--       auto_login: !pgState.pageState[0].auto_login, -->
+  <!--       storage_state: "", -->
+  <!--       service: "autoGyatt", -->
+  <!--       custom_url: "sigmaRizz.ohio", -->
+  <!--       scrape: true, -->
+  <!--       allow_delay: false, -->
+  <!--       execute: false, -->
+  <!--     }; -->
+  <!--     const id: number = Math.round(Math.random() * 10); -->
+  <!--     const doc = document.getElementById("PageControlsDisplay"); -->
+  <!--     if (doc != null) doc.style.display = "block"; -->
+  <!---->
+  <!--     pgState.update(id, ps); -->
+  <!--   }}>Click to Rune</button -->
+  <!-- > -->
 
-      <div>
-        <span>Select Storage State:</span>
-        <select
-          class="p-2 rounded-md"
-          id="StorageDisplay"
-          onfocus={async () => await getStorageStates()}
-          onchange={() => {}}
-        >
-        </select>
-      </div>
-
-      <div>
-        <span>Context for URL:</span>
-        <input
-          type="text"
-          class="p-2 rounded-sm"
-          name="contextURL"
-          id="ContextURL"
-        />
-      </div>
-
-      <div>
-        <label for="Autologin">
-          <span>Auto Log in</span>
-        </label>
-        <input
-          type="checkbox"
-          class="p-2 outline-none"
-          name="autologin"
-          id="Autologin"
-        />
-      </div>
-    </div>
-
-    <div>
-      <button
-        class="bg-lime-700 hover:bg-lime-600 active:italic p-2 rounded-md text-gray-50"
-        onclick={() => startContext()}>Start New Context</button
-      >
-    </div>
-  </div>
+  {#if pgInstances.instanceCount() != 0}
+    <PageControls />
+  {/if}
 </main>
