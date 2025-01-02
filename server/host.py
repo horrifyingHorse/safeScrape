@@ -1,5 +1,4 @@
 import os
-from typing import Tuple
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
