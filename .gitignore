@@ -4,7 +4,7 @@ env/
 *.json
 *.state
 
-testin/server/
+testin/
 **/__pycache__/
 *.pyc
 *.chat
