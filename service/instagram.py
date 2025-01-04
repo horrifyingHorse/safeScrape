@@ -9,25 +9,22 @@ from service.delay import human_like_delay
 
 async def loginInstagram(page: Page):
     _ = await page.goto("https://instagram.com/")
-
     await page.locator('input[type="text"][name="username"]').fill(
         f"{os.getenv("INSTAGRAM_USERNAME")}"
     )
     await page.locator('input[type="password"][name="password"]').fill(
         f"{os.getenv("INSTAGRAM_PASSWORD")}"
     )
-
     button = page.locator('button[type="submit"]')
-
     await human_like_delay() if pagestate.allow_delay else None
     await button.hover()
     await human_like_delay() if pagestate.allow_delay else None
     await button.click()
-
     print("Complete 2FA")
-    await page.pause()
-    _ = await page.context.storage_state(path="instagram_state.session")
-    await page.close()
+    print("And save the state")
+    # await page.pause()
+    # _ = await page.context.storage_state(path="instagram_state.session")
+    # await page.close()
     return
 
 

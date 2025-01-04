@@ -1,5 +1,5 @@
 <script lang="ts">
-  let stateName: string = $state("template");
+  import { stateName } from "./lib/store.svelte";
   let editMode: boolean = $state(false);
 
   function focusOnMount(node: HTMLElement) {
@@ -23,7 +23,7 @@
         <input
           class="italic w-full outline-none border-none bg-transparent text-center p-2"
           type="text"
-          bind:value={stateName}
+          bind:value={$stateName}
           onblur={() => {
             editMode = false;
           }}
@@ -43,7 +43,7 @@
     </div>
   {:else}
     <div class="cursor-text p-2 border-none">
-      {stateName}.state
+      {$stateName}.state
     </div>
   {/if}
 </div>

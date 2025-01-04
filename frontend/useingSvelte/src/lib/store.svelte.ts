@@ -1,4 +1,4 @@
-import { writable } from "svelte/store"
+import { writable, type Writable } from "svelte/store"
 
 export interface PageState {
   auto_login: boolean,
@@ -13,6 +13,7 @@ export interface PageState {
 class PgState {
   public pageState: PageState[] = $state([{
     auto_login: false,
+    new_state: false,
     storage_state: "",
     service: "",
     custom_url: "",
@@ -36,7 +37,8 @@ class PgState {
   }
 }
 
-export class PageInstances {
+// Singleton
+class PageInstances {
   private static instance: PageInstances | null = null
   public instanceStore: { [key: number]: string } = {}
   public iterableInstanceStore: string[] = $state([])
@@ -74,6 +76,71 @@ export class PageInstances {
 }
 
 export const pgState: PgState = new PgState()
-export const services = writable<string[]>([])
-export const storageStates = writable<string[]>([])
+export const services: Writable<string[]> = writable<string[]>([])
+export const storageStates: Writable<string[]> = writable<string[]>(["default"])
 export const pgInstances: PageInstances = PageInstances.getManager()
+export const stateName: Writable<string> = writable<string>("template");
+export const newStateWanted: Writable<boolean> = writable<boolean>(false);
+
+class Display {
+  private displayDiv: HTMLDivElement | null = null
+  private taskId: number = 0
+
+  constructor(id: string | null) {
+    if (id === null) return
+    this.displayDiv = (document.getElementById(id) as HTMLDivElement)
+  }
+
+  public init(id: string | null) {
+    if (this.displayDiv !== null) {
+      console.error("A div has already been assigned displayDiv")
+      return
+    }
+    if (id === null) {
+      this.displayDiv = null
+      return
+    }
+    this.displayDiv = (document.getElementById(id) as HTMLDivElement)
+  }
+
+  public log(msg: string, classList: string[] = []) {
+    if (this.displayDiv === null) return
+    const child = this.createChildDiv(msg, classList)
+    this.displayDiv.appendChild(child)
+  }
+
+  public success(msg: string, classList: string[] = []) {
+    if (this.displayDiv === null) return
+    const child = this.createChildDiv(msg, [...classList, "text-lime-400"])
+    this.displayDiv.appendChild(child)
+  }
+
+
+  public error(msg: string, classList: string[] = []) {
+    if (this.displayDiv === null) return
+    const child = this.createChildDiv(msg, [...classList, "text-red-400"])
+    this.displayDiv.appendChild(child)
+  }
+
+  private createChildDiv(msg: string, classList: string[] = []): HTMLDivElement {
+    const div = document.createElement("div")
+    const timeSpan = this.createTime()
+    const msgSpan = document.createElement("span")
+    if (classList.length) {
+      msgSpan.classList.add(...classList)
+    }
+    msgSpan.innerText = ` ${msg}`
+    div.appendChild(timeSpan)
+    div.appendChild(msgSpan)
+    return div
+  }
+
+  private createTime(): HTMLSpanElement {
+    const timeSpan = document.createElement("span")
+    timeSpan.classList.add("select-none", "text-zinc-400")
+    timeSpan.innerText = `[${Date().split(" ")[4]}]`
+    return timeSpan
+  }
+}
+
+export const logDisplay: Display = new Display(null)

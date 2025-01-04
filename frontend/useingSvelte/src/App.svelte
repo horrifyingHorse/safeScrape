@@ -1,6 +1,7 @@
 <script lang="ts">
   import AppControls from "./AppControls.svelte";
   import PageControls from "./PageControls.svelte";
+  import Console from "./Console.svelte";
   import { pgInstances } from "./lib/store.svelte";
   import { onMount } from "svelte";
 
@@ -47,27 +48,45 @@ Features:
       (+) URL to start context with
       (+) Auto Log in?
       + (+) Kill Browser
-      + ( ) Create New State
+      + (+) Create New State
   => AppControls
+
+  [ ] Console area
+      ( ) logs
+      ( ) data display
+      (?) terminal?
 -->
 
-<main>
-  <div
-    class="flex z-0 justify-center py-4 text-3xl w-svw text-center mb-4 select-none"
-  >
-    <div class="flex absolute text-[#39ff14] z-0">
-      <div class="sixtyfour-normal">App Controls</div>
-    </div>
+<main class="flex flex-col justify-center gap-2 w-svw h-svh">
+  <div class="h-1/4">
     <div
-      class="flex relative transition-all z-10 text-[#86ff70] hover:text-[#a9ff99] blur-sm"
+      class="flex z-0 justify-center py-4 text-3xl w-svw text-center mb-4 select-none"
     >
-      <div id="StaticNoise" class="sixtyfour-normal">App Controls</div>
+      <div class="flex absolute text-[#39ff14] z-0">
+        <div class="sixtyfour-normal">App Controls</div>
+      </div>
+      <div
+        class="flex relative transition-all z-10 text-[#86ff70] hover:text-[#a9ff99] blur-sm"
+      >
+        <div id="StaticNoise" class="sixtyfour-normal">App Controls</div>
+      </div>
     </div>
+
+    <AppControls />
   </div>
 
-  <AppControls />
+  <div class="flex w-svw h-3/4 pt-4 overflow-hidden">
+    <div class="w-1/2">
+      {#if pgInstances.instanceCount() != 0}
+        <PageControls />
+      {/if}
+    </div>
 
-  {#if pgInstances.instanceCount() != 0}
-    <PageControls />
-  {/if}
+    <div
+      class="flex flex-col w-1/2 p-2 bg-[#000000] border-[#39ff14] border rounded-lg"
+      onscrollcapture={() => console.log("Gotem")}
+    >
+      <Console />
+    </div>
+  </div>
 </main>

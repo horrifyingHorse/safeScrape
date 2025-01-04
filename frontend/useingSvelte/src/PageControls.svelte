@@ -1,14 +1,13 @@
 <script lang="ts">
-  import { getPageInfoById } from "./lib/in.svelte";
+  import { getPageInfoById, saveStorageState } from "./lib/in.svelte";
   import { pgState, pgInstances } from "./lib/store.svelte";
   import PageDiv from "./PageDiv.svelte";
-  import { onMount } from "svelte";
 </script>
 
 <div id="PageControlsDisplay">
   <div class="text-3xl pl-3">Page Controls</div>
   <div class="w-full flex p-3 h-auto">
-    <div class="w-1/2 p-2" id="InfoDisplay">
+    <div class="w-full p-2" id="InfoDisplay">
       <select
         name="page"
         id="PageSelction"
@@ -60,11 +59,15 @@
         />
 
         <div class="flex justify-around">
-          <button class="p-2 rounded-lg bg-teal-700">Start Scrape</button>
+          <button
+            class="p-2 rounded-lg bg-violet-800 hover:bg-violet-700"
+            onclick={saveStorageState}>Save State</button
+          >
+          <button class="p-2 rounded-lg bg-violet-800 hover:bg-violet-700"
+            >Start Scrape</button
+          >
         </div>
       </div>
     </div>
-
-    <div class="w-1/2"></div>
   </div>
 </div>

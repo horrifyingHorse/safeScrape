@@ -18,9 +18,7 @@ async def newContext(browser: Browser, state: PageState) -> BrowserContext:
         },
         permissions=["geolocation"],
         color_scheme="dark",
-        storage_state=f"./state/{state.storage_state}",
-        # storage_state="instagram_state.session",
-        # storage_state="discord_state.session",
+        storage_state=f"./state/{state.storage_state}" if not state.new_state else None,
         user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     )
 
@@ -47,3 +45,8 @@ async def newPage(browser: Browser, state: PageState) -> Page:
         _ = await page.goto(state.custom_url)
 
     return page
+
+
+async def saveStorageState(page: Page, state: PageState) -> bool:
+    _ = await page.context.storage_state(path=f"./state/{state.storage_state}.state")
+    return True

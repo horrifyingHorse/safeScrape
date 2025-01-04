@@ -5,15 +5,13 @@
     killBrowser,
     getServices,
   } from "./lib/in.svelte";
-  import { services, storageStates } from "./lib/store.svelte";
+  import { services, storageStates, newStateWanted } from "./lib/store.svelte";
   import { onMount } from "svelte";
   import InputComponent from "./InputComponent.svelte";
 
-  let newStateWanted: boolean = $state(false);
-
-  onMount(() => {
+  onMount(async () => {
     getServices();
-    getStorageStates();
+    await getStorageStates();
   });
 </script>
 
@@ -35,7 +33,7 @@
 
     <div class="flex items-center gap-1">
       <span>Select Storage State:</span>
-      {#if newStateWanted}
+      {#if $newStateWanted}
         <InputComponent />
       {:else}
         <select
@@ -51,12 +49,18 @@
       {/if}
       <button
         class="p-1 px-3 text-xl font-mono font-bold rounded-md bg-violet-800 hover:bg-violet-700"
-        title={!newStateWanted
+        title={!$newStateWanted
           ? "Add New State"
           : "Select from Existing States"}
-        onclick={() => (newStateWanted = !newStateWanted)}
+        onclick={() => {
+          if ($newStateWanted && $storageStates.length == 0) {
+            console.log("No existing states");
+            return;
+          }
+          newStateWanted.set(!$newStateWanted);
+        }}
       >
-        {#if !newStateWanted}
+        {#if !$newStateWanted}
           +
         {:else}
           -
@@ -75,14 +79,22 @@
     </div>
 
     <div>
-      <label for="Autologin">
+      <label
+        for="Autologin"
+        title={$newStateWanted
+          ? "Cannot automate in a New State"
+          : "Automate service login"}
+      >
         <span>Auto Log in</span>
       </label>
+
+      <!-- Uncheck this input when newStateWanted disables it -->
       <input
         type="checkbox"
         class="p-2 outline-none"
         name="autologin"
         id="Autologin"
+        disabled={$newStateWanted}
       />
     </div>
   </div>

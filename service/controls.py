@@ -16,6 +16,7 @@ class AppState:
 
 class PageState(BaseModel):
     auto_login: bool = False
+    new_state: bool = False
     storage_state: str = ""  # Session Info
     service: str = "instagram.com"
     custom_url: str = ""
@@ -43,15 +44,17 @@ class BrowserManager:
         return cls.browser
 
     @classmethod
-    async def killBrowser(cls) -> None:
+    async def killBrowser(cls) -> tuple[bool, str]:
         if cls.browser is not None:
             await cls.browser.close()
             cls.browser = None
-        if cls.playwright_instance is not None:
-            await cls.playwright_instance.stop()
-            cls.playwright_instance = None
+            if cls.playwright_instance is not None:
+                await cls.playwright_instance.stop()
+                cls.playwright_instance = None
+        else:
+            return (False, "Browser does not exist. No browser to close")
         await PageManager.clear()
-        return
+        return (True, "success")
 
 
 class PageManager:
