@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { getPageInfoById, saveStorageState } from "./lib/in.svelte";
+  import {
+    getPageInfoById,
+    saveStorageState,
+    toggleScrape,
+  } from "./lib/in.svelte";
   import { pgState, pgInstances } from "./lib/store.svelte";
   import PageDiv from "./PageDiv.svelte";
 </script>
@@ -63,9 +67,16 @@
             class="p-2 rounded-lg bg-violet-800 hover:bg-violet-700"
             onclick={saveStorageState}>Save State</button
           >
-          <button class="p-2 rounded-lg bg-violet-800 hover:bg-violet-700"
-            >Start Scrape</button
+          <button
+            class="p-2 w-32 rounded-lg bg-violet-800 hover:bg-violet-700"
+            onclick={toggleScrape}
           >
+            {#if pgState.pageState[0].scrape}
+              Stop Scrape
+            {:else}
+              Start Scrape
+            {/if}
+          </button>
         </div>
       </div>
     </div>

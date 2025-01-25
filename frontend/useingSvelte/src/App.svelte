@@ -39,6 +39,17 @@
       clearInterval(interval);
     };
   });
+
+  // var ws = new WebSocket("ws://localhost:8000/foo");
+  // ws.onmessage = function (event) {
+  //   console.log(event.data);
+  // };
+  // function sendMessage(event: Event | undefined) {
+  //   var input = document.getElementById("messageText") as HTMLInputElement;
+  //   ws.send(input.value);
+  //   input.value = "";
+  //   event?.preventDefault();
+  // }
 </script>
 
 <!--
@@ -75,6 +86,11 @@ Features:
     <AppControls />
   </div>
 
+  <!-- <form action="" onsubmit={() => sendMessage(event)}> -->
+  <!--   <input type="text" id="messageText" autocomplete="off" /> -->
+  <!--   <button>Send</button> -->
+  <!-- </form> -->
+
   <div class="flex w-svw h-3/4 pt-4 overflow-hidden">
     <div class="w-1/2">
       {#if pgInstances.instanceCount() != 0}
@@ -84,7 +100,6 @@ Features:
 
     <div
       class="flex flex-col w-1/2 p-2 bg-[#000000] border-[#39ff14] border rounded-lg"
-      onscrollcapture={() => console.log("Gotem")}
     >
       <Console />
     </div>

@@ -1,4 +1,4 @@
-import { writable, type Writable } from "svelte/store"
+import { get, writable, type Writable } from "svelte/store"
 
 export interface PageState {
   auto_login: boolean,
@@ -106,20 +106,26 @@ class Display {
   public log(msg: string, classList: string[] = []) {
     if (this.displayDiv === null) return
     const child = this.createChildDiv(msg, classList)
+    let lastChild: HTMLDivElement | null = null
+    if (this.displayDiv.children.length > 2) {
+      lastChild = this.displayDiv.children[this.displayDiv.children.length - 1] as HTMLDivElement;
+    }
     this.displayDiv.appendChild(child)
+    if (lastChild && (lastChild.getClientRects() as DOMRectList)[0].top <= window.innerHeight) {
+      child.scrollIntoView(false)
+    }
   }
 
   public success(msg: string, classList: string[] = []) {
-    if (this.displayDiv === null) return
-    const child = this.createChildDiv(msg, [...classList, "text-lime-400"])
-    this.displayDiv.appendChild(child)
+    this.log(msg, [...classList, "text-lime-400"])
   }
 
+  public serverlog(msg: string, classList: string[] = []) {
+    this.log(msg, [...classList, "text-yellow-400"])
+  }
 
   public error(msg: string, classList: string[] = []) {
-    if (this.displayDiv === null) return
-    const child = this.createChildDiv(msg, [...classList, "text-red-400"])
-    this.displayDiv.appendChild(child)
+    this.log(msg, [...classList, "text-red-400"])
   }
 
   private createChildDiv(msg: string, classList: string[] = []): HTMLDivElement {
@@ -142,5 +148,62 @@ class Display {
     return timeSpan
   }
 }
-
 export const logDisplay: Display = new Display(null)
+
+export interface ScrapedData {
+  MsgId: number,
+  ReplyTo: string | null,
+  Author: string,
+  Content: string,
+}
+
+export let indexedDataBaseNames: string[] = []
+export const SockConn: Writable<WebSocket | null> = writable(null)
+export async function upSockConn(ws_addr: number) {
+  SockConn.update((ws: WebSocket | null) => {
+    if (ws !== null) {
+      ws.close()
+    }
+    indexedDataBaseNames.push(`${ws_addr}`)
+    return new WebSocket(`ws://localhost:8000/scrapy/${ws_addr}`)
+  })
+
+  const newSockConn = get(SockConn);
+  if (!newSockConn) return
+  newSockConn.onopen = () => {
+    logDisplay.success("Connected to " + newSockConn.url)
+  }
+  newSockConn.onmessage = (event) => {
+    const data: ScrapedData[] = JSON.parse(event.data)
+    console.log(data)
+
+    const indexedDB = window.indexedDB.open(`${ws_addr}`)
+    let db: null | IDBDatabase
+
+    indexedDB.onerror = () => {
+      console.error("already exists")
+    }
+    indexedDB.onupgradeneeded = () => {
+      const db = indexedDB.result
+      if (db.objectStoreNames.contains("msgs")) return
+      const objStore = db.createObjectStore("msgs", { keyPath: "MsgId", })
+      objStore.createIndex("Author", "Author", { unique: false })
+      objStore.createIndex("ReplyTo", "ReplyTo", { unique: false })
+      objStore.createIndex("Content", "Content", { unique: false })
+    }
+    indexedDB.onsuccess = () => {
+      db = indexedDB.result
+      console.log("created")
+      const transaction = db.transaction("msgs", "readwrite")
+      transaction.onerror = () => console.error("Transaction failed")
+      const msgs = transaction.objectStore("msgs")
+
+      data.forEach(item => {
+        const request = msgs.add(item)
+        request.onsuccess = () => console.log("Written")
+        request.onerror = () => console.log("Failed to write")
+      })
+      db.close()
+    }
+  }
+}

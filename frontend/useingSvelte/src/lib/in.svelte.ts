@@ -1,5 +1,5 @@
 import ky, { type KyResponse } from "ky"
-import { pgInstances, pgState, services, storageStates, newStateWanted, stateName, logDisplay } from "./store.svelte"
+import { indexedDataBaseNames, pgInstances, pgState, services, storageStates, newStateWanted, stateName, logDisplay, upSockConn } from "./store.svelte"
 import type { PageState } from "./store.svelte"
 import { get } from "svelte/store"
 
@@ -7,6 +7,20 @@ interface APIResponse<T> {
   success: boolean,
   data: T | null,
   error: string | null
+}
+
+export async function toggleScrape() {
+  const updatedState: boolean = !pgState.pageState[0].scrape
+  console.log(updatedState, pgState.pageId)
+  const res: KyResponse = await ky.post("http://localhost:8000/api/pagestate/scrape", { json: { "id": pgState.pageId, "status": updatedState } })
+  const result: APIResponse<null> = await res.json()
+  if (!result.success) {
+    logDisplay.error("Failed to update page state with id: " + pgState.pageId, ["font-bold"])
+    logDisplay.error("Server Response: " + result.error)
+    return
+  }
+  pgState.pageState[0].scrape = updatedState
+  logDisplay.serverlog("Scraping status set to: " + updatedState)
 }
 
 export async function saveStorageState() {
@@ -41,6 +55,15 @@ export async function killBrowser() {
   const result: APIResponse<null> = await res.json()
   if (result.success) {
     pgInstances.clear()
+    indexedDataBaseNames.forEach(dbName => {
+      const dbDel = window.indexedDB.deleteDatabase(dbName)
+      dbDel.onsuccess = () =>
+        console.log("Successfully Deleted Database: ", dbName)
+      dbDel.onerror = () =>
+        console.error("Unable to delete Database ", dbName)
+      dbDel.onblocked = () =>
+        console.warn("Database deletion is blocked. Close all connections to proceed.");
+    })
     logDisplay.success("Assassination Completed")
   } else {
     logDisplay.error("Assasination Failed", ["font-bold"])
@@ -51,12 +74,13 @@ export async function killBrowser() {
 
 export async function getPageInfoById(id: number) {
   const res: KyResponse = await ky.get(`http://localhost:8000/api/appstate?id=${id}`)
-  const result: APIResponse<{ id: number, pageState: PageState }> = await res.json()
+  const result: APIResponse<{ id: number, pageState: PageState, ws_addr: number }> = await res.json()
   if (result.data === null) {
     logDisplay.error("Error fetching info of page with id: " + id, ["font-bold"])
     logDisplay.error("Server Response: " + result.error)
   } else {
     pgState.update(result.data.id, result.data.pageState)
+    upSockConn(result.data.ws_addr)
   }
   return
 }
@@ -79,8 +103,8 @@ export async function startNewPage() {
     "autoLogIn": autoLogIn
   }
   logDisplay.log("Launching new page: " + get(services)[serviceIndex] + "::" + storageState)
-  const res: KyResponse = await ky.post("http://localhost:8000/api/appstate", { json: sendData })
-  const result: APIResponse<{ id: number, pageState: PageState }> = await res.json()
+  const res: KyResponse = await ky.post("http://localhost:8000/api/appstate", { json: sendData, timeout: 20000 })
+  const result: APIResponse<{ id: number, pageState: PageState, ws_addr: number }> = await res.json()
   if (result.data === null) {
     logDisplay.error("Failed to launch new page", ["font-bold"])
     logDisplay.error("Server Response: " + result.error)
@@ -88,6 +112,7 @@ export async function startNewPage() {
     pgState.update(result.data.id, result.data.pageState)
     pgInstances.addInstance(result.data.id, result.data.pageState.service)
     logDisplay.success("Launched new page")
+    upSockConn(result.data.ws_addr)
   }
 
   // Skibidi
