@@ -2,7 +2,26 @@
   import AppControls from "./AppControls.svelte";
   import PageControls from "./PageControls.svelte";
   import Console from "./Console.svelte";
-  import { pgInstances } from "./lib/store.svelte";
+  import { pgInstances, selectedConsole } from "./lib/store.svelte";
+  import { onMount } from "svelte";
+
+  let activeModi: boolean = false;
+
+  onMount(() => {
+    document.addEventListener("keydown", (event) => {
+      if (activeModi && event.key >= "1" && event.key <= "9") {
+        const index = parseInt(event.key, 10);
+        if (index < 1 || index > 3) return;
+        $selectedConsole = index - 1;
+      }
+
+      activeModi = false;
+      if (event.altKey && event.key.toLowerCase() == "a") {
+        activeModi = true;
+        console.log("Active Modi");
+      }
+    });
+  });
 </script>
 
 <!--
