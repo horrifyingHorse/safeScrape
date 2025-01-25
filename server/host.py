@@ -1,6 +1,7 @@
+import asyncio
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from playwright.async_api import Browser, Page
@@ -10,6 +11,7 @@ from uvicorn.server import Server
 
 from service.browser_controls import newPage, saveStorageState
 from service.controls import BrowserManager, PageManager, PageState, appstate
+from service.instagram import scrapeInstagram
 
 
 class getAppStateSchema(BaseModel):
@@ -21,6 +23,11 @@ class getAppStateSchema(BaseModel):
 
 
 class setStatusSchema(BaseModel):
+    status: bool
+
+
+class ScrapeStatusSchema(BaseModel):
+    id: int
     status: bool
 
 
@@ -39,6 +46,33 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.websocket("/socky")
+async def tests(ws: WebSocket):
+    await ws.accept()
+    return
+
+
+@app.websocket("/scrapy/{ws_addr}")
+async def consoleConnect(ws: WebSocket, ws_addr: int):
+    await ws.accept()
+    await ws.send_json([{"status": f"Connection was made with ws_addr#{ws_addr}"}])
+    state: PageState | None = await PageManager.getPageByWs_addr(ws_addr)
+    if not state:
+        print("No state thus returnin")
+        return
+    id: int | None = await PageManager.getIdByWs_addr(ws_addr)
+    if id == None:
+        print("No id thus returnin:", id)
+        return
+    await ws.send_json([{"status": "ws fine"}])
+    while True:
+        print("ws pollin")
+        newMsgs: int = await PageManager.pollData(id)
+        data = PageManager.scrapedData[id]
+        await ws.send_json([d.model_dump() for d in data[-newMsgs:]])
+        print("sent: ", data)
 
 
 @app.post("/api/appstate/status")
@@ -61,11 +95,14 @@ async def newState(data: getAppStateSchema):
     errMsg: str = ""
     try:
         browser: Browser = await BrowserManager.getBrowser()
+        print("Bowser")
         page: Page = await newPage(browser, pageState)
-        id = await PageManager.addPage(page, pageState)
+        print("Page")
+        id, ws_addr = await PageManager.addPage(page, pageState)
+        print("Page added")
         return {
             "success": True,
-            "data": {"id": id, "pageState": pageState},
+            "data": {"id": id, "pageState": pageState, "ws_addr": ws_addr},
             "error": None,
         }
     except Exception as e:
@@ -86,18 +123,33 @@ async def updatePageState(data: PageStateSchema):
 @app.post("/api/pagestate/savestoragestate")
 async def saveState(data: PageStateSchema):
     try:
-        pageInfo: tuple[Page, PageState] = await PageManager.getPage(data.id)
-        _ = await saveStorageState(pageInfo[0], pageInfo[1])
+        page, pageState, _ = await PageManager.getPage(data.id)
+        _ = await saveStorageState(page, pageState)
         return {"success": True, "data": None, "error": None}
     except Exception as e:
         errMsg = f"Error while storin State: " + str(e)
         return {"success": False, "data": None, "error": errMsg}
 
 
+@app.post("/api/pagestate/scrape")
+async def scrapeStatus(data: ScrapeStatusSchema):
+    if data.status:
+        page, state, _ = await PageManager.getPage(data.id)
+        if state.service == "instagram.com":
+            print("Ordered Scrapin")
+            _ = asyncio.create_task(scrapeInstagram(data.id, page))
+    _ = await PageManager.updateScrapeStatus(data.id, data.status)
+    return {"success": True, "data": None, "error": None}
+
+
 @app.get("/api/appstate")
 async def getState(id: int):
-    data: tuple[Page, PageState] = await PageManager.getPage(id)
-    return {"success": True, "data": {"id": id, "pageState": data[1]}, "error": None}
+    _, pageState, ws_addr = await PageManager.getPage(id)
+    return {
+        "success": True,
+        "data": {"id": id, "pageState": pageState, "ws_addr": ws_addr},
+        "error": None,
+    }
 
 
 @app.get("/api/appstate/service")
