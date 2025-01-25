@@ -136,7 +136,7 @@ class Display {
     if (classList.length) {
       msgSpan.classList.add(...classList)
     }
-    msgSpan.innerText = ` ${msg}`
+    msgSpan.innerText = `${msg}`
     div.appendChild(timeSpan)
     div.appendChild(msgSpan)
     return div
@@ -145,7 +145,7 @@ class Display {
   private createTime(): HTMLSpanElement {
     const timeSpan = document.createElement("span")
     timeSpan.classList.add("select-none", "text-[#3d405b]")
-    timeSpan.innerText = `[${Date().split(" ")[4]}]`
+    timeSpan.innerText = `[${Date().split(" ")[4]}] `
     return timeSpan
   }
 }

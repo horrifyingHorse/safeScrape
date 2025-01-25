@@ -9,7 +9,7 @@
 
 <div
   id="NewStateName"
-  class={`flex justify-center w-56`}
+  class={`flex justify-center w-48`}
   aria-hidden="true"
   role="button"
   tabindex="0"
@@ -21,7 +21,7 @@
     <div class="flex w-full">
       <div class="w-3/4">
         <input
-          class="italic w-full outline-none border-none bg-transparent text-center p-2"
+          class="italic w-full outline-none border-none bg-transparent text-center p-1"
           type="text"
           bind:value={$stateName}
           onblur={() => {
@@ -36,13 +36,13 @@
         />
       </div>
       <div
-        class="rounded-xl rounded-l-none border-0 w-1/4 text-zinc-500 bg-zinc-800 text-center p-2"
+        class="rounded-xl rounded-l-none border-0 text-[#3d405b] bg-[#171717] text-center p-1"
       >
         .state
       </div>
     </div>
   {:else}
-    <div class="cursor-text p-2 border-none">
+    <div class="cursor-text px-2 border-none">
       {$stateName}.state
     </div>
   {/if}

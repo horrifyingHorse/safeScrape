@@ -9,17 +9,22 @@
       ? pgState.toggleAutoLogin
       : pgState.toggleAllowDelay;
 
-  if (category == "Id") {
+  if (category == "Service ID") {
     addedStyles = "italic text-zinc-400";
     addedDetails = "#";
   }
 </script>
 
 {#if detailType === "text"}
-  <div class="flex">
-    <div class="w-1/3 flex justify-around">{category}</div>
-    <div class="w-1/3 flex justify-around">:</div>
-    <div class="w-1/3 flex justify-around {addedStyles}">
+  <div class="flex flex-col">
+    <div class="flex w-full justify-center">
+      <span class="text-[#babbf1]">{category}</span> :
+    </div>
+    <div
+      class="flex justify-around {addedStyles} {detail === true
+        ? 'text-[#81b29a]'
+        : 'text-[#e07a5f]'}"
+    >
       {addedDetails}{detail}
     </div>
   </div>
@@ -32,9 +37,8 @@
       updatePageState();
     }}
   >
-    <div class="w-1/3 flex justify-around">{category}</div>
-    <div class="w-1/3 flex justify-around">:</div>
-    <div class="w-1/3 flex justify-around">
+    <div>
+      <span class="select-none cursor-pointer">{category} : </span>
       <input id={inputId} type="checkbox" checked={detail} />
     </div>
   </div>

@@ -6,9 +6,6 @@
   onMount(() => {
     logDisplay.init("console-log");
     logDisplay.log("Console Initialised");
-    logDisplay.serverlog("Console Initialised");
-    logDisplay.success("Console Initialised");
-    logDisplay.error("Console Initialised");
   });
 </script>
 
@@ -18,7 +15,7 @@
       <img src="ri-terminal-box-line.svg" alt="term" />
     </div>
     <ConsoleTab type="button" name="logs" idx={0} />
-    <ConsoleTab type="button" name="terminal" idx={1} />
+    <ConsoleTab type="button" name="data" idx={1} />
     <ConsoleTab type="button" name="terminal" idx={2} />
   </div>
 </div>
