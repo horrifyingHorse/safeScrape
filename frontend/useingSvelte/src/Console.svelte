@@ -1,43 +1,30 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { logDisplay } from "./lib/store.svelte";
-
-  let selectedConsole: number = $state(0);
+  import ConsoleTab from "./ConsoleTab.svelte";
 
   onMount(() => {
     logDisplay.init("console-log");
     logDisplay.log("Console Initialised");
+    logDisplay.serverlog("Console Initialised");
+    logDisplay.success("Console Initialised");
+    logDisplay.error("Console Initialised");
   });
 </script>
 
-<div
-  class="flex text-center gap-x-4 pb-2 border border-b-[#39ff14] border-transparent"
->
-  <button
-    class={selectedConsole == 0 ? "italic px-4 w-12" : "px-4 w-12"}
-    onclick={() => (selectedConsole = 0)}>logs</button
-  >
-  <button
-    class={selectedConsole == 1 ? "italic px-4 w-12" : "px-4 w-12"}
-    onclick={() => (selectedConsole = 1)}>data</button
-  >
-  <button
-    class={selectedConsole == 2 ? "italic px-4 w-12" : "px-4 w-12"}
-    onclick={() => (selectedConsole = 2)}>terminal</button
-  >
+<div class="w-full h-[4%] min-h-[28px] font-mono">
+  <div id="tab" class="flex">
+    <div class="bg-[#282c34] p-1 px-4 z-10 flex items-center">
+      <img src="ri-terminal-box-line.svg" alt="term" />
+    </div>
+    <ConsoleTab type="button" name="logs" idx={0} />
+    <ConsoleTab type="button" name="terminal" idx={1} />
+    <ConsoleTab type="button" name="terminal" idx={2} />
+  </div>
 </div>
 
-<div class="overflow-hidden h-full">
-  <div
-    id="console-log"
-    class={`font-mono overflow-hidden h-full overflow-y-auto ${selectedConsole == 0 ? "block" : "hidden"}`}
-  ></div>
-  <div
-    id="console-data"
-    class={`overflow-hidden h-full ${selectedConsole == 1 ? "block" : "hidden"}`}
-  ></div>
-  <div
-    id="console-terminal"
-    class={`font-mono overflow-hidden overflow-y-auto h-full ${selectedConsole == 2 ? "block" : "hidden"}`}
-  ></div>
+<div class="overflow-hidden h-[96%] p-2">
+  <ConsoleTab type="display" name="console-log" idx={0} />
+  <ConsoleTab type="display" name="console-date" idx={1} />
+  <ConsoleTab type="display" name="console-terminal" idx={2} />
 </div>

@@ -68,40 +68,13 @@ Features:
       (?) terminal?
 -->
 
-<main class="flex flex-col justify-center gap-2 w-svw h-svh">
-  <div class="h-1/4">
-    <div
-      class="flex z-0 justify-center py-4 text-3xl w-svw text-center mb-4 select-none"
-    >
-      <div class="flex absolute text-[#39ff14] z-0">
-        <div class="sixtyfour-normal">App Controls</div>
-      </div>
-      <div
-        class="flex relative transition-all z-10 text-[#86ff70] hover:text-[#a9ff99] blur-sm"
-      >
-        <div id="StaticNoise" class="sixtyfour-normal">App Controls</div>
-      </div>
-    </div>
-
-    <AppControls />
+<!-- <main class="flex w-svw h-svh p-4"> -->
+<main class="flex w-svw h-svh">
+  <div class="h-full w-[65%] bg-[#3d405b] p-2">
+    <div class="text-center text-3xl text-[#f4f1de]">ControlPanel</div>
   </div>
 
-  <!-- <form action="" onsubmit={() => sendMessage(event)}> -->
-  <!--   <input type="text" id="messageText" autocomplete="off" /> -->
-  <!--   <button>Send</button> -->
-  <!-- </form> -->
-
-  <div class="flex w-svw h-3/4 pt-4 overflow-hidden">
-    <div class="w-1/2">
-      {#if pgInstances.instanceCount() != 0}
-        <PageControls />
-      {/if}
-    </div>
-
-    <div
-      class="flex flex-col w-1/2 p-2 bg-[#000000] border-[#39ff14] border rounded-lg"
-    >
-      <Console />
-    </div>
+  <div class="h-full w-[35%] bg-[#171717]">
+    <Console />
   </div>
 </main>

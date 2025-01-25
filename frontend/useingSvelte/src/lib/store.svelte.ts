@@ -105,6 +105,7 @@ class Display {
 
   public log(msg: string, classList: string[] = []) {
     if (this.displayDiv === null) return
+    if (classList.length == 0) classList = ["text-[#f4f1de]"]
     const child = this.createChildDiv(msg, classList)
     let lastChild: HTMLDivElement | null = null
     if (this.displayDiv.children.length > 2) {
@@ -117,15 +118,15 @@ class Display {
   }
 
   public success(msg: string, classList: string[] = []) {
-    this.log(msg, [...classList, "text-lime-400"])
+    this.log(msg, [...classList, "text-[#81b29a]"])
   }
 
   public serverlog(msg: string, classList: string[] = []) {
-    this.log(msg, [...classList, "text-yellow-400"])
+    this.log(msg, [...classList, "text-[#f2cc8f]"])
   }
 
   public error(msg: string, classList: string[] = []) {
-    this.log(msg, [...classList, "text-red-400"])
+    this.log(msg, [...classList, "text-[#e07a5f]"])
   }
 
   private createChildDiv(msg: string, classList: string[] = []): HTMLDivElement {
@@ -143,12 +144,13 @@ class Display {
 
   private createTime(): HTMLSpanElement {
     const timeSpan = document.createElement("span")
-    timeSpan.classList.add("select-none", "text-zinc-400")
+    timeSpan.classList.add("select-none", "text-[#3d405b]")
     timeSpan.innerText = `[${Date().split(" ")[4]}]`
     return timeSpan
   }
 }
 export const logDisplay: Display = new Display(null)
+export const selectedConsole: Writable<number> = writable(0);
 
 export interface ScrapedData {
   MsgId: number,
